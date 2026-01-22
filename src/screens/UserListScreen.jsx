@@ -4,6 +4,7 @@ import {
   View,
   FlatList,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,16 +31,10 @@ const UserListScreen = () => {
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
-  /**
-   * Fetch users whenever page changes
-   */
   useEffect(() => {
     loadUsers(page);
   }, [page]);
 
-  /**
-   * API call
-   */
   const loadUsers = async (pageNumber) => {
     try {
       dispatch(fetchStart());
@@ -50,17 +45,12 @@ const UserListScreen = () => {
     }
   };
 
-  /**
-   * Infinite scroll handler
-   */
+
   const loadMoreUsers = () => {
     if (loading || list.length === 0) return;
     dispatch(incrementPage());
   };
 
-  /**
-   * Pull-to-refresh
-   */
   const onRefresh = async () => {
     try {
       setRefreshing(true);
@@ -71,26 +61,17 @@ const UserListScreen = () => {
     }
   };
 
-  /**
-   * Retry after error
-   */
   const onRetry = () => {
     dispatch(resetUsers());
     dispatch(incrementPage());
   };
 
-  /**
-   * Search filter
-   */
   const filteredUsers = useMemo(() => {
     return list.filter((user) =>
       user.name.toLowerCase().includes(search.toLowerCase())
     );
   }, [list, search]);
 
-  /**
-   * Render user item
-   */
   const renderItem = useCallback(
     ({ item }) => (
       <UserItem
@@ -103,33 +84,67 @@ const UserListScreen = () => {
     [navigation]
   );
 
-  /**
-   * Footer loader
-   */
   const renderFooter = () => {
     if (!loading || list.length === 0) return null;
-    return <ActivityIndicator style={styles.loader} />;
+    return (
+      <View style={styles.footerLoader}>
+        <ActivityIndicator size="small" color="#6366F1" />
+      </View>
+    );
+  };
+
+  const renderEmptyState = () => {
+    if (loading) return null;
+    if (search) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyIcon}>🔍</Text>
+          <Text style={styles.emptyTitle}>No users found</Text>
+          <Text style={styles.emptySubtitle}>
+            Try adjusting your search terms
+          </Text>
+        </View>
+      );
+    }
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyIcon}>👥</Text>
+        <Text style={styles.emptyTitle}>No users available</Text>
+        <Text style={styles.emptySubtitle}>
+          Pull down to refresh and load users
+        </Text>
+      </View>
+    );
+  };
+
+  const renderError = () => {
+    if (!error) return null;
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={onRetry}>
+          <Text style={styles.retryButtonText}>Try Again</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   return (
     <View style={styles.container}>
+
       <SearchInput
         placeholder="Search by name"
         value={search}
         onChangeText={setSearch}
       />
 
-      {error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.retry} onPress={onRetry}>
-            Retry
-          </Text>
-        </View>
-      )}
+      {renderError()}
 
       {loading && list.length === 0 ? (
-        <ActivityIndicator size="large" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6366F1" />
+          <Text style={styles.loadingText}>Loading users...</Text>
+        </View>
       ) : (
         <FlatList
           data={filteredUsers}
@@ -138,12 +153,14 @@ const UserListScreen = () => {
           onEndReached={loadMoreUsers}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
-          ListEmptyComponent={
-            !loading && <Text>No users found</Text>
-          }
+          ListEmptyComponent={renderEmptyState}
           refreshing={refreshing}
           onRefresh={onRefresh}
           keyboardShouldPersistTaps="handled"
+          contentContainerStyle={
+            filteredUsers.length === 0 ? styles.emptyListContainer : styles.listContainer
+          }
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -156,23 +173,106 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9FAFB",
-    padding: 16,
   },
-  loader: {
-    marginVertical: 16,
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
   },
-  errorContainer: {
-    padding: 12,
-    backgroundColor: "#fee",
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  errorText: {
-    color: "red",
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#111827",
+    letterSpacing: -0.5,
     marginBottom: 4,
   },
-  retry: {
-    color: "blue",
-    fontWeight: "bold",
+  headerSubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  listContainer: {
+    padding: 16,
+    paddingTop: 12,
+  },
+  emptyListContainer: {
+    flexGrow: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 100,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: "#6B7280",
+    fontWeight: "500",
+  },
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  errorContainer: {
+    margin: 16,
+    marginTop: 12,
+    padding: 20,
+    backgroundColor: "#FEF2F2",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    alignItems: "center",
+  },
+  errorIcon: {
+    fontSize: 32,
+    marginBottom: 12,
+  },
+  errorText: {
+    color: "#DC2626",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: "#DC2626",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    minWidth: 120,
+  },
+  retryButtonText: {
+    color: "#FFFFFF",
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 80,
+    paddingHorizontal: 40,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    fontSize: 15,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 22,
   },
 });
