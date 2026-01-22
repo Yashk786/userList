@@ -86,7 +86,7 @@ const UserListScreen = () => {
 
   const renderFooter = () => {
     if (!loadingMore) return null;
-    return <ActivityIndicator style={{ marginVertical: 16 }} />;
+    <ActivityIndicator size="large" style={styles.loader} />
   };
 
   return (
@@ -134,41 +134,60 @@ export default UserListScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
-  searchInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 12,
-  },
+
   item: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    backgroundColor: "#FFFFFF",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+
+    elevation: 2,
   },
+
   name: {
     fontSize: 16,
     fontWeight: "600",
+    color: "#111827",
   },
+
   email: {
     fontSize: 14,
-    color: "#666",
+    color: "#6B7280",
+    marginTop: 4,
   },
+
   errorContainer: {
-    padding: 12,
-    backgroundColor: "#fdecea",
-    borderRadius: 6,
+    backgroundColor: "#FEF2F2",
+    borderRadius: 10,
+    padding: 14,
     marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#FECACA",
   },
+
   errorText: {
-    color: "#d32f2f",
+    color: "#B91C1C",
+    fontSize: 14,
     marginBottom: 6,
   },
+
   retry: {
-    color: "#1976d2",
+    color: "#2563EB",
+    fontSize: 14,
     fontWeight: "600",
   },
-  
+
+  loader: {
+    marginTop: 40,
+  },
 });
+

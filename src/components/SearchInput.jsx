@@ -9,6 +9,7 @@ const SearchInput = ({ value, onChangeText, placeholder }) => {
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
+        placeholderTextColor="#9CA3AF"
       />
     </View>
   );
@@ -21,9 +22,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   input: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
     borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    borderRadius: 6,
+    borderColor: "#E5E7EB",
+    marginBottom: 5,
   },
 });

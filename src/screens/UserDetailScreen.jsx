@@ -14,7 +14,7 @@ const UserDetailScreen = ({ route }) => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={styles.card}>
             <Text style={styles.label}>Name</Text>
             <Text style={styles.value}>{user.name}</Text>
 
@@ -32,6 +32,7 @@ const UserDetailScreen = ({ route }) => {
                 {address.city} - {address.zipcode}
             </Text>
         </View>
+
     );
 };
 
@@ -40,16 +41,37 @@ export default UserDetailScreen;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: "#F9FAFB",
         padding: 16,
     },
-    label: {
-        fontSize: 14,
-        color: "#666",
-        marginTop: 12,
+
+    card: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: 14,
+        padding: 18,
+        marginTop: 30,
+        marginHorizontal: 16,
+        shadowColor: "#000",
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 3 },
+
+        elevation: 3,
     },
+
+    label: {
+        fontSize: 13,
+        color: "#6B7280",
+        marginTop: 16,
+        textTransform: "uppercase",
+        letterSpacing: 0.5,
+    },
+
     value: {
         fontSize: 16,
         fontWeight: "600",
-        marginTop: 4,
+        color: "#111827",
+        marginTop: 6,
     },
 });
+
