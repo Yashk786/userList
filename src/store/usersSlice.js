@@ -14,9 +14,22 @@ const usersSlice = createSlice({
       state.error = null;
     },
     fetchSuccess(state, action) {
-      state.list = [...state.list, ...action.payload];
+      const incoming = action.payload;
+    
+      if (state.page === 1) {
+        state.list = incoming;
+      } else {
+        const existingIds = new Set(state.list.map(u => u.id));
+    
+        const uniqueNewUsers = incoming.filter(
+          u => !existingIds.has(u.id)
+        );
+    
+        state.list = [...state.list, ...uniqueNewUsers];
+      }
+    
       state.loading = false;
-    },
+    },    
     fetchFailure(state, action) {
       state.loading = false;
       state.error = action.payload;

@@ -31,39 +31,43 @@ const UserListScreen = () => {
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
+  const loadUsers = useCallback(
+    async (pageNumber) => {
+      try {
+        dispatch(fetchStart());
+        const response = await fetchUsersApi(pageNumber);
+        dispatch(fetchSuccess(response));
+      } catch (err) {
+        dispatch(fetchFailure("Failed to load users"));
+      }
+    },
+    [dispatch]
+  );
+
+  useEffect(() => {
+    if (!loading && refreshing) {
+      setRefreshing(false);
+    }
+  }, [loading, refreshing]);
+
   useEffect(() => {
     loadUsers(page);
-  }, [page]);
-
-  const loadUsers = async (pageNumber) => {
-    try {
-      dispatch(fetchStart());
-      const response = await fetchUsersApi(pageNumber);
-      dispatch(fetchSuccess(response));
-    } catch (err) {
-      dispatch(fetchFailure("Failed to load users"));
-    }
-  };
+  }, [page, loadUsers]);
 
 
   const loadMoreUsers = () => {
-    if (loading || list.length === 0) return;
+    if (loading || refreshing) return;
     dispatch(incrementPage());
   };
 
-  const onRefresh = async () => {
-    try {
-      setRefreshing(true);
-      dispatch(resetUsers());
-      loadUsers(1); 
-    } finally {
-      setRefreshing(false);
-    }
+  const onRefresh = () => {
+    if (loading) return;
+    setRefreshing(true);
+    dispatch(resetUsers());
   };
 
   const onRetry = () => {
     dispatch(resetUsers());
-    dispatch(incrementPage());
   };
 
   const filteredUsers = useMemo(() => {
@@ -129,6 +133,7 @@ const UserListScreen = () => {
     );
   };
 
+
   return (
     <View style={styles.container}>
 
@@ -148,10 +153,10 @@ const UserListScreen = () => {
       ) : (
         <FlatList
           data={filteredUsers}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => `user-${item.id}`}
           renderItem={renderItem}
           onEndReached={loadMoreUsers}
-          onEndReachedThreshold={0.5}
+          onEndReachedThreshold={0.2}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={renderEmptyState}
           refreshing={refreshing}
