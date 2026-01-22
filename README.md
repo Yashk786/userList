@@ -20,6 +20,25 @@ npm run android  # For Android
 npm run ios      # For iOS
 ```
 
+## 📦 APK File
+
+The tested APK file is located in the `releases/` folder at the root of the repository.
+
+**APK Location:** `releases/UserList-v1.0.apk` (or `releases/app-release.apk`)
+
+To build your own APK:
+
+```bash
+# Navigate to android directory
+cd android
+
+# Build release APK
+./gradlew assembleRelease
+
+# The APK will be generated at:
+# android/app/build/outputs/apk/release/app-release.apk
+```
+
 ## 🛠️ Tech Stack
 
 - React Native
