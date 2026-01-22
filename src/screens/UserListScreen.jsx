@@ -5,93 +5,114 @@ import {
   FlatList,
   ActivityIndicator,
 } from "react-native";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchStart,
+  fetchSuccess,
+  fetchFailure,
+  resetUsers,
+  incrementPage,
+} from "../store/usersSlice";
 import { fetchUsersApi } from "../services/userApi";
 import { useNavigation } from "@react-navigation/native";
 import UserItem from "../components/UserItem";
 import SearchInput from "../components/SearchInput";
 
 const UserListScreen = () => {
-  const [users, setUsers] = useState([]);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
+
+  const { list, page, loading, error } = useSelector(
+    (state) => state.users
+  );
+
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
-  const navigation = useNavigation();
-  const [error, setError] = useState(null);
 
+  /**
+   * Fetch users whenever page changes
+   */
   useEffect(() => {
-    getUsers(1);
-  }, []);
+    loadUsers(page);
+  }, [page]);
 
-  const getUsers = async (pageNumber) => {
+  /**
+   * API call
+   */
+  const loadUsers = async (pageNumber) => {
     try {
-      setError(null);
-      pageNumber === 1 ? setLoading(true) : setLoadingMore(true);
-
+      dispatch(fetchStart());
       const response = await fetchUsersApi(pageNumber);
-
-      setUsers((prevUsers) =>
-        pageNumber === 1 ? response : [...prevUsers, ...response]
-      );
+      dispatch(fetchSuccess(response));
     } catch (err) {
-      setError("Failed to load users. Please try again.");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      dispatch(fetchFailure("Failed to load users"));
     }
   };
 
-
-  console.log("users", users);
-
+  /**
+   * Infinite scroll handler
+   */
   const loadMoreUsers = () => {
-    if (!loadingMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      getUsers(nextPage);
-    }
+    if (loading || list.length === 0) return;
+    dispatch(incrementPage());
   };
 
+  /**
+   * Pull-to-refresh
+   */
   const onRefresh = async () => {
     try {
       setRefreshing(true);
-      setError(null);
-      setPage(1);
-
-      const response = await fetchUsersApi(1);
-      setUsers(response);
-    } catch (err) {
-      setError("Failed to refresh users.");
+      dispatch(resetUsers());
+      dispatch(incrementPage()); // sets page back to 1
     } finally {
       setRefreshing(false);
     }
   };
 
+  /**
+   * Retry after error
+   */
+  const onRetry = () => {
+    dispatch(resetUsers());
+    dispatch(incrementPage());
+  };
 
+  /**
+   * Search filter
+   */
   const filteredUsers = useMemo(() => {
-    return users.filter((user) =>
+    return list.filter((user) =>
       user.name.toLowerCase().includes(search.toLowerCase())
     );
-  }, [users, search]);
+  }, [list, search]);
 
-  const renderItem = ({ item }) => (
-    <UserItem
-      user={item}
-      onPress={() => navigation.navigate("UserDetail", { user: item })}
-    />
+  /**
+   * Render user item
+   */
+  const renderItem = useCallback(
+    ({ item }) => (
+      <UserItem
+        user={item}
+        onPress={() =>
+          navigation.navigate("UserDetail", { user: item })
+        }
+      />
+    ),
+    [navigation]
   );
 
-
+  /**
+   * Footer loader
+   */
   const renderFooter = () => {
-    if (!loadingMore) return null;
-    <ActivityIndicator size="large" style={styles.loader} />
+    if (!loading || list.length === 0) return null;
+    return <ActivityIndicator style={styles.loader} />;
   };
 
   return (
     <View style={styles.container}>
-      {/* Search Input */}
       <SearchInput
         placeholder="Search by name"
         value={search}
@@ -101,17 +122,15 @@ const UserListScreen = () => {
       {error && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.retry} onPress={() => getUsers(1)}>
+          <Text style={styles.retry} onPress={onRetry}>
             Retry
           </Text>
         </View>
       )}
 
-
-      {loading && users.length === 0 ? (
+      {loading && list.length === 0 ? (
         <ActivityIndicator size="large" />
       ) : (
-
         <FlatList
           data={filteredUsers}
           keyExtractor={(item) => item.id.toString()}
@@ -119,11 +138,13 @@ const UserListScreen = () => {
           onEndReached={loadMoreUsers}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
-          ListEmptyComponent={<Text>No users found</Text>}
+          ListEmptyComponent={
+            !loading && <Text>No users found</Text>
+          }
           refreshing={refreshing}
           onRefresh={onRefresh}
+          keyboardShouldPersistTaps="handled"
         />
-
       )}
     </View>
   );
@@ -135,59 +156,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F9FAFB",
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-
-  item: {
-    backgroundColor: "#FFFFFF",
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-
-    elevation: 2,
   },
-
-  name: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#111827",
-  },
-
-  email: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginTop: 4,
-  },
-
-  errorContainer: {
-    backgroundColor: "#FEF2F2",
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#FECACA",
-  },
-
-  errorText: {
-    color: "#B91C1C",
-    fontSize: 14,
-    marginBottom: 6,
-  },
-
-  retry: {
-    color: "#2563EB",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
   loader: {
-    marginTop: 40,
+    marginVertical: 16,
+  },
+  errorContainer: {
+    padding: 12,
+    backgroundColor: "#fee",
+    borderRadius: 6,
+    marginBottom: 8,
+  },
+  errorText: {
+    color: "red",
+    marginBottom: 4,
+  },
+  retry: {
+    color: "blue",
+    fontWeight: "bold",
   },
 });
-
