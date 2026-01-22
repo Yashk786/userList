@@ -19,6 +19,7 @@ import { fetchUsersApi } from "../services/userApi";
 import { useNavigation } from "@react-navigation/native";
 import UserItem from "../components/UserItem";
 import SearchInput from "../components/SearchInput";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const UserListScreen = () => {
   const dispatch = useDispatch();
@@ -135,42 +136,43 @@ const UserListScreen = () => {
 
 
   return (
-    <View style={styles.container}>
-
-      <SearchInput
-        placeholder="Search by name"
-        value={search}
-        onChangeText={setSearch}
-      />
-
-      {renderError()}
-
-      {loading && list.length === 0 ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#6366F1" />
-          <Text style={styles.loadingText}>Loading users...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredUsers}
-          keyExtractor={(item) => `user-${item.id}`}
-          renderItem={renderItem}
-          onEndReached={loadMoreUsers}
-          onEndReachedThreshold={0.2}
-          ListFooterComponent={renderFooter}
-          ListEmptyComponent={renderEmptyState}
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={[
-            styles.listContainer,
-            filteredUsers.length === 0 && styles.emptyListContainer,
-          ]}
-          
-          showsVerticalScrollIndicator={false}
+    <SafeAreaView style={{ flex: 1 }} edges={["left", "right", "top"]}>
+      <View style={styles.container}>
+        <SearchInput
+          placeholder="Search by name"
+          value={search}
+          onChangeText={setSearch}
         />
-      )}
-    </View>
+
+        {renderError()}
+
+        {loading && list.length === 0 ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#6366F1" />
+            <Text style={styles.loadingText}>Loading users...</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={filteredUsers}
+            keyExtractor={(item) => `user-${item.id}`}
+            renderItem={renderItem}
+            onEndReached={loadMoreUsers}
+            onEndReachedThreshold={0.2}
+            ListFooterComponent={renderFooter}
+            ListEmptyComponent={renderEmptyState}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={[
+              styles.listContainer,
+              filteredUsers.length === 0 && styles.emptyListContainer,
+            ]}
+
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
 
