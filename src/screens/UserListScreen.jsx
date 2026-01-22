@@ -1,46 +1,91 @@
-import { StyleSheet, Text, View, FlatList } from "react-native";
-import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
+import React, { useEffect, useState, useMemo } from "react";
 import { fetchUsersApi } from "../services/userApi";
 
 const UserListScreen = () => {
   const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
-    getUsers();
+    getUsers(1);
   }, []);
 
-  const getUsers = async () => {
+  const getUsers = async (pageNumber) => {
     try {
-      setLoading(true);
-      const response = await fetchUsersApi(1);
-      setUsers(response);
+      pageNumber === 1 ? setLoading(true) : setLoadingMore(true);
+
+      const response = await fetchUsersApi(pageNumber);
+
+      setUsers((prevUsers) =>
+        pageNumber === 1 ? response : [...prevUsers, ...response]
+      );
     } catch (error) {
       console.log("Error fetching users:", error.message);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
-  const renderItem = ({ item }) => {
-    return (
-      <View style={styles.item}>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.email}>{item.email}</Text>
-      </View>
+  const loadMoreUsers = () => {
+    if (!loadingMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      getUsers(nextPage);
+    }
+  };
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) =>
+      user.name.toLowerCase().includes(search.toLowerCase())
     );
+  }, [users, search]);
+
+  const renderItem = ({ item }) => (
+    <View style={styles.item}>
+      <Text style={styles.name}>{item.name}</Text>
+      <Text style={styles.email}>{item.email}</Text>
+    </View>
+  );
+
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return <ActivityIndicator style={{ marginVertical: 16 }} />;
   };
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={users}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        ListEmptyComponent={
-          !loading && <Text>No users found</Text>
-        }
+      {/* Search Input */}
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search by name"
+        value={search}
+        onChangeText={setSearch}
       />
+
+      {loading ? (
+        <ActivityIndicator size="large" />
+      ) : (
+        <FlatList
+          data={filteredUsers}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          onEndReached={loadMoreUsers}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={<Text>No users found</Text>}
+        />
+      )}
     </View>
   );
 };
@@ -51,6 +96,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 6,
+    marginBottom: 12,
   },
   item: {
     padding: 12,
