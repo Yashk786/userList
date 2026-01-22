@@ -3,13 +3,13 @@ import {
   Text,
   View,
   FlatList,
-  TextInput,
   ActivityIndicator,
-  TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState, useMemo } from "react";
 import { fetchUsersApi } from "../services/userApi";
 import { useNavigation } from "@react-navigation/native";
+import UserItem from "../components/UserItem";
+import SearchInput from "../components/SearchInput";
 
 const UserListScreen = () => {
   const [users, setUsers] = useState([]);
@@ -55,14 +55,12 @@ const UserListScreen = () => {
   }, [users, search]);
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.item}
+    <UserItem
+      user={item}
       onPress={() => navigation.navigate("UserDetail", { user: item })}
-    >
-      <Text style={styles.name}>{item.name}</Text>
-      <Text style={styles.email}>{item.email}</Text>
-    </TouchableOpacity>
+    />
   );
+
 
   const renderFooter = () => {
     if (!loadingMore) return null;
@@ -72,8 +70,7 @@ const UserListScreen = () => {
   return (
     <View style={styles.container}>
       {/* Search Input */}
-      <TextInput
-        style={styles.searchInput}
+      <SearchInput
         placeholder="Search by name"
         value={search}
         onChangeText={setSearch}
