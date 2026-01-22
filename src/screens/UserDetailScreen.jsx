@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View, ScrollView } from "react-native";
 import React from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const UserDetailScreen = ({ route }) => {
     const { user } = route.params;
@@ -53,57 +54,59 @@ const UserDetailScreen = ({ route }) => {
     );
 
     return (
-        <ScrollView
-            style={styles.container}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-        >
-            <View style={styles.headerCard}>
-                <View style={[styles.avatar, { backgroundColor: getAvatarColor(user.name) }]}>
-                    <Text style={styles.avatarText}>{getInitials(user.name)}</Text>
-                </View>
-                <Text style={styles.userName}>{user.name}</Text>
-                <Text style={styles.userEmail}>{user.email}</Text>
-            </View>
-
-            <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Contact Information</Text>
-
-                <InfoRow
-                    label="Email"
-                    value={user.email}
-                    isLink={true}
-                />
-
-                <InfoRow
-                    label="Phone"
-                    value={user.phone}
-                    isLink={true}
-                />
-            </View>
-
-            <View style={styles.card}>
-                <Text style={styles.sectionTitle}>Address</Text>
-
-                <View style={styles.infoRow}>
-                    <View style={styles.infoHeader}>
-                        <Text style={styles.label}>Street</Text>
+        <SafeAreaView style={{ flex: 1 }} edges={["left", "right", "top"]}>
+            <ScrollView
+                style={{ flex: 1, backgroundColor: "#F9FAFB" }}
+                contentContainerStyle={{ flexGrow: 1 }}
+                showsVerticalScrollIndicator={false}
+            >
+                <View style={styles.headerCard}>
+                    <View style={[styles.avatar, { backgroundColor: getAvatarColor(user.name) }]}>
+                        <Text style={styles.avatarText}>{getInitials(user.name)}</Text>
                     </View>
-                    <Text style={styles.value} selectable>
-                        {address.street}, {address.suite}
-                    </Text>
+                    <Text style={styles.userName}>{user.name}</Text>
+                    <Text style={styles.userEmail}>{user.email}</Text>
                 </View>
 
-                <View style={styles.infoRow}>
-                    <View style={styles.infoHeader}>
-                        <Text style={styles.label}>City & Zip</Text>
-                    </View>
-                    <Text style={styles.value} selectable>
-                        {address.city}, {address.zipcode}
-                    </Text>
+                <View style={styles.card}>
+                    <Text style={styles.sectionTitle}>Contact Information</Text>
+
+                    <InfoRow
+                        label="Email"
+                        value={user.email}
+                        isLink={true}
+                    />
+
+                    <InfoRow
+                        label="Phone"
+                        value={user.phone}
+                        isLink={true}
+                    />
                 </View>
-            </View>
-        </ScrollView>
+
+                <View style={styles.card}>
+                    <Text style={styles.sectionTitle}>Address</Text>
+
+                    <View style={styles.infoRow}>
+                        <View style={styles.infoHeader}>
+                            <Text style={styles.label}>Street</Text>
+                        </View>
+                        <Text style={styles.value} selectable>
+                            {address.street}, {address.suite}
+                        </Text>
+                    </View>
+
+                    <View style={styles.infoRow}>
+                        <View style={styles.infoHeader}>
+                            <Text style={styles.label}>City & Zip</Text>
+                        </View>
+                        <Text style={styles.value} selectable>
+                            {address.city}, {address.zipcode}
+                        </Text>
+                    </View>
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
 };
 

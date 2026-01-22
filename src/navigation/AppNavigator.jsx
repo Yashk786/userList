@@ -7,8 +7,14 @@ const Stack = createNativeStackNavigator();
 export default function AppNavigator() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="UserList" component={UserListScreen} />
-      <Stack.Screen name="UserDetail" component={UserDetailScreen} />
+      <Stack.Screen name="UserList" component={UserListScreen} options={{ headerShown: false }} />
+      <Stack.Screen
+        name="UserDetail"
+        component={UserDetailScreen}
+        options={({ route }) => ({
+          title: route.params?.user?.name ?? "User Detail",
+        })}
+      />
     </Stack.Navigator>
   );
 }

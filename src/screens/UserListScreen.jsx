@@ -162,9 +162,11 @@ const UserListScreen = () => {
           refreshing={refreshing}
           onRefresh={onRefresh}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={
-            filteredUsers.length === 0 ? styles.emptyListContainer : styles.listContainer
-          }
+          contentContainerStyle={[
+            styles.listContainer,
+            filteredUsers.length === 0 && styles.emptyListContainer,
+          ]}
+          
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -200,11 +202,13 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   listContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
     paddingTop: 12,
+    paddingBottom: 16,
   },
   emptyListContainer: {
     flexGrow: 1,
+    justifyContent: "center",
   },
   loadingContainer: {
     flex: 1,
