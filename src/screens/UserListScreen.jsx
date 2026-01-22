@@ -17,6 +17,7 @@ const UserListScreen = () => {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [search, setSearch] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -40,6 +41,8 @@ const UserListScreen = () => {
     }
   };
 
+  console.log("users", users);
+
   const loadMoreUsers = () => {
     if (!loadingMore) {
       const nextPage = page + 1;
@@ -47,6 +50,19 @@ const UserListScreen = () => {
       getUsers(nextPage);
     }
   };
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      setPage(1);
+      const response = await fetchUsersApi(1);
+      setUsers(response);
+    } catch (error) {
+      console.log("Error refreshing users:", error.message);
+    } finally {
+      setRefreshing(false);
+    }
+  };  
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) =>
@@ -80,14 +96,17 @@ const UserListScreen = () => {
         <ActivityIndicator size="large" />
       ) : (
         <FlatList
-          data={filteredUsers}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          onEndReached={loadMoreUsers}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={renderFooter}
-          ListEmptyComponent={<Text>No users found</Text>}
-        />
+        data={filteredUsers}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        onEndReached={loadMoreUsers}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={renderFooter}
+        ListEmptyComponent={<Text>No users found</Text>}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+      />
+      
       )}
     </View>
   );

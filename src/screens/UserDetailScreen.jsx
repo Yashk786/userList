@@ -3,6 +3,7 @@ import React from "react";
 
 const UserDetailScreen = ({ route }) => {
   const { user } = route.params;
+  const { address } = user;
 
   return (
     <View style={styles.container}>
@@ -14,6 +15,14 @@ const UserDetailScreen = ({ route }) => {
 
       <Text style={styles.label}>Phone</Text>
       <Text style={styles.value}>{user.phone}</Text>
+
+      <Text style={styles.label}>Address</Text>
+      <Text style={styles.value}>
+        {address.street}, {address.suite}
+      </Text>
+      <Text style={styles.value}>
+        {address.city} - {address.zipcode}
+      </Text>
     </View>
   );
 };
