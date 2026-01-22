@@ -19,6 +19,7 @@ const UserListScreen = () => {
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     getUsers(1);
@@ -26,6 +27,7 @@ const UserListScreen = () => {
 
   const getUsers = async (pageNumber) => {
     try {
+      setError(null);
       pageNumber === 1 ? setLoading(true) : setLoadingMore(true);
 
       const response = await fetchUsersApi(pageNumber);
@@ -33,13 +35,14 @@ const UserListScreen = () => {
       setUsers((prevUsers) =>
         pageNumber === 1 ? response : [...prevUsers, ...response]
       );
-    } catch (error) {
-      console.log("Error fetching users:", error.message);
+    } catch (err) {
+      setError("Failed to load users. Please try again.");
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   };
+
 
   console.log("users", users);
 
@@ -54,15 +57,18 @@ const UserListScreen = () => {
   const onRefresh = async () => {
     try {
       setRefreshing(true);
+      setError(null);
       setPage(1);
+
       const response = await fetchUsersApi(1);
       setUsers(response);
-    } catch (error) {
-      console.log("Error refreshing users:", error.message);
+    } catch (err) {
+      setError("Failed to refresh users.");
     } finally {
       setRefreshing(false);
     }
-  };  
+  };
+
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) =>
@@ -92,21 +98,32 @@ const UserListScreen = () => {
         onChangeText={setSearch}
       />
 
-      {loading ? (
+      {error && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.retry} onPress={() => getUsers(1)}>
+            Retry
+          </Text>
+        </View>
+      )}
+
+
+      {loading && users.length === 0 ? (
         <ActivityIndicator size="large" />
       ) : (
+
         <FlatList
-        data={filteredUsers}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        onEndReached={loadMoreUsers}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        ListEmptyComponent={<Text>No users found</Text>}
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-      />
-      
+          data={filteredUsers}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+          onEndReached={loadMoreUsers}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={<Text>No users found</Text>}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+        />
+
       )}
     </View>
   );
@@ -139,4 +156,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
+  errorContainer: {
+    padding: 12,
+    backgroundColor: "#fdecea",
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  errorText: {
+    color: "#d32f2f",
+    marginBottom: 6,
+  },
+  retry: {
+    color: "#1976d2",
+    fontWeight: "600",
+  },
+  
 });
