@@ -1,12 +1,14 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import TestScreen from "../screens/TestScreen";
+import UserListScreen from "../screens/UserListScreen";
+import UserDetailScreen from "../screens/UserDetailScreen";
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Test" component={TestScreen} />
+      <Stack.Screen name="UserList" component={UserListScreen} />
+      <Stack.Screen name="UserDetail" component={UserDetailScreen} />
     </Stack.Navigator>
   );
 }
