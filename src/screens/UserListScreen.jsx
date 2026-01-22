@@ -5,9 +5,11 @@ import {
   FlatList,
   TextInput,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState, useMemo } from "react";
 import { fetchUsersApi } from "../services/userApi";
+import { useNavigation } from "@react-navigation/native";
 
 const UserListScreen = () => {
   const [users, setUsers] = useState([]);
@@ -15,6 +17,7 @@ const UserListScreen = () => {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [search, setSearch] = useState("");
+  const navigation = useNavigation();
 
   useEffect(() => {
     getUsers(1);
@@ -52,10 +55,13 @@ const UserListScreen = () => {
   }, [users, search]);
 
   const renderItem = ({ item }) => (
-    <View style={styles.item}>
+    <TouchableOpacity
+      style={styles.item}
+      onPress={() => navigation.navigate("UserDetail", { user: item })}
+    >
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.email}>{item.email}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderFooter = () => {
