@@ -65,7 +65,7 @@ const UserListScreen = () => {
     try {
       setRefreshing(true);
       dispatch(resetUsers());
-      dispatch(incrementPage()); // sets page back to 1
+      loadUsers(1); 
     } finally {
       setRefreshing(false);
     }
